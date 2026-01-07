@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Interactive Park</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="ui">
+    <button id="toggleView">Toggle POV</button>
+    <button id="toggleDay">Day / Night</button>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
