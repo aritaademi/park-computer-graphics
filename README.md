@@ -16,7 +16,7 @@ npm install
 
 3. Run the project locally
    
-npm start
+npm run dev
 
 📌 Project Overview
 
