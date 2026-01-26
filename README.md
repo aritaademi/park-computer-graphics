@@ -5,7 +5,6 @@
 Follow these steps to clone and run the project on your computer:
 
 1. Clone the repository
-```bash
 git clone https://github.com/aritaademi/park-computer-graphics.git
 cd park-computer-graphics
 
