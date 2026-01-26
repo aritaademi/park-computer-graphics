@@ -11,9 +11,11 @@ git clone https://github.com/aritaademi/park-computer-graphics.git
  cd park-computer-graphics
 
 2. Make sure you install the dependencies
+
 npm install
 
 3. Run the project locally
+   
 npm start
 
 📌 Project Overview
