@@ -1,3 +1,20 @@
+🎉 **Live Demo:** [View the project in your browser](https://parkproject-omega.vercel.app/)
+
+## 🚀 Getting Started (Run Locally)
+
+Follow these steps to clone and run the project on your computer:
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/aritaademi/park-computer-graphics.git
+cd park-computer-graphics
+
+### 2. Make sure you install the dependencies
+npm install
+
+### 3. Run the project locally
+npm start
+
 📌 Project Overview
 
 This project is a 3D Interactive Park developed using Three.js as part of the Computer Graphics course. The goal of the project is to demonstrate core computer graphics concepts such as 3D modeling, transformations, lighting, textures, scene hierarchy, animation, and user interaction.
