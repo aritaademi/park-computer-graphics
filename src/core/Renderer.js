@@ -1,16 +1,14 @@
-// src/core/Renderer.js
 import * as THREE from 'three';
 
 export default class Renderer {
   constructor(camera) {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer = new THREE.WebGLRenderer({ antialias: true }); //Antialiasing = smoother edges
+    this.renderer.setSize(window.innerWidth, window.innerHeight); //screen size
     //this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); //pizel ratio: improves quality and Prevents performance issues on 4K screens
 
-    // IMPORTANT for grading
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.enabled = true; //Enables realistic shadows
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; //Soft edges
 
     document.body.appendChild(this.renderer.domElement);
     this.camera = camera;

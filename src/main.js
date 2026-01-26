@@ -1,8 +1,5 @@
-
-// src/main.js
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
 import SceneManager from './core/SceneManager';
 import CameraManager from './core/CameraManager';
 import Renderer from './core/Renderer';
@@ -28,83 +25,76 @@ import Keyboard from './input/Keyboard';
 import CollisionManager from './physics/CollisionManager';
 import WindSystem from './world/WindSystem';
 
-
-// --------------------
 // Core Setup
-// --------------------
 const sceneManager = new SceneManager();
 const scene = sceneManager.getScene();
-
-const cameraManager = new CameraManager();
+const cameraManager = new CameraManager();  //creates the perspective camera
 const camera = cameraManager.getCamera();
-
-const renderer = new Renderer(camera);
+const renderer = new Renderer(camera);  //Creates WebGL renderer and connects it to the camera
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.renderer.domElement);
-controls.target.set(0, 0, 0);
-controls.update();
+controls.target.set(0, 0, 0); //Mouse rotates around (0,0,0)
+controls.update();  //Used when NOT in first-person mode
 // Keyboard
-const keyboard = new Keyboard();
+const keyboard = new Keyboard();  //Tracks key presses (WASD, etc.)
 
 // First Person Controller
-const fpController = new FirstPersonController(
-  camera,
+const fpController = new FirstPersonController(  //First-person movement system:
+  camera,   //Uses camera, Uses keyboard, Checks collisions, Locks mouse
   renderer.renderer.domElement,
   scene,
   keyboard
 );
 
 // POV state
-let isFirstPerson = false;
+let isFirstPerson = false;  //Tracks current camera mode
 
-const collisionManager = new CollisionManager();
-
+const collisionManager = new CollisionManager(); //Stores all obstacles (benches, slide, swing, playground)
+//used by: fpController.update(delta, collisionManager);
 
 // Raycasting & UI
-const raycastManager = new RaycastManager(camera, scene);
-const infoPanel = new InfoPanel();
-window.addEventListener('click', (e) => raycastManager.onClick(e));
+const raycastManager = new RaycastManager(camera, scene);  //Raycasting = clicking 3D objects
+const infoPanel = new InfoPanel();  //InfoPanel = HTML popup
+window.addEventListener('click', (e) => raycastManager.onClick(e));  //Every click → check what object was clicked
 
-const clock = new Clock();
+const clock = new Clock();  //Gives delta time (seconds between frames), This makes animations frame-rate independent.
 
 // --------------------
 // World
 // --------------------
-new Environment(scene);
-new Lighting(scene);
-new Ground(scene);
-const stars = new Stars(scene);
-stars.setVisible(false); // hidden during day
-
+new Environment(scene);  //creates base world
+new Lighting(scene);  //creates lights
+new Ground(scene);  //creates grass terrain
+const stars = new Stars(scene);  
+stars.setVisible(false); //stars exist but are hidden during day
 
 // --------------------
-// 🌳 Trees – Large Rectangle Border
+// Trees – Large Rectangle Border
 // --------------------
 const treeDistance = 18;
 const treePositions = [];
 
-// Top & Bottom rows
+// Top & Bottom rows - calculate positions in a rectangle to form a park boundary
 for (let x = -treeDistance; x <= treeDistance; x += 6) {
   treePositions.push({ x, y: 0, z: -treeDistance });
   treePositions.push({ x, y: 0, z: treeDistance });
 }
-
-// Left & Right rows
+// Left & Right rows - calculate positions in a rectangle to form a park boundary
 for (let z = -treeDistance + 6; z <= treeDistance - 6; z += 6) {
   treePositions.push({ x: -treeDistance, y: 0, z });
   treePositions.push({ x: treeDistance, y: 0, z });
 }
 
-treePositions.forEach(pos => new Tree(scene, pos));
+treePositions.forEach(pos => new Tree(scene, pos));  //Procedural generation = no manual placement
 
 const gltfLoader = new GLTFLoader();
 const windSystem = new WindSystem();
 
 // --------------------
-// 🌲 Decorative Trees – Background Forest
+// Decorative Trees – Background Forest
 // --------------------
-gltfLoader.load(
+gltfLoader.load(   //load decorative trees
   '/assets/models/trees/decorative_tree.glb',
   (gltf) => {
 
@@ -148,26 +138,9 @@ function addDecorativeTrees(scene, treeTemplate) {
     }
   }
 }
-// function spawnDecorativeTree(scene, template, x, y, z) {
-//   const tree = template.clone(true);
-
-//   // Slight randomness
-//   const scale = 2 + Math.random() * 1.5;
-//   tree.scale.set(scale, scale, scale);
-
-//   tree.position.set(
-//     x + Math.random() * 1.5,
-//     y,
-//     z + Math.random() * 1.5
-//   );
-
-//   tree.rotation.y = Math.random() * Math.PI * 2;
-
-//   scene.add(tree);
-// }
 
 function spawnDecorativeTree(scene, template, x, y, z) {
-  const tree = template.clone(true);
+  const tree = template.clone(true);  //clone many times
 
   const scale = 2 + Math.random() * 1.5;
   tree.scale.set(scale, scale, scale);
@@ -179,14 +152,11 @@ function spawnDecorativeTree(scene, template, x, y, z) {
   );
 
   tree.rotation.y = Math.random() * Math.PI * 2;
-
   scene.add(tree);
 
-  // 🌬️ Register for wind animation
+  // Register for wind animation
   windSystem.add(tree);
 }
-
-
 
 // --------------------
 // Load Models
@@ -194,7 +164,7 @@ function spawnDecorativeTree(scene, template, x, y, z) {
 const modelLoader = new ModelLoader();
 
 // --------------------
-// 🪑 Benches – Inner Rectangle Corners
+//  Benches – Inner Rectangle Corners
 // --------------------
 modelLoader.load('/assets/models/benches/bench.glb').then(model => {
   const benchPositions = [
@@ -206,26 +176,27 @@ modelLoader.load('/assets/models/benches/bench.glb').then(model => {
 
   benchPositions.forEach(pos => {
     const bench = new Bench(scene, model, pos);
-    collisionManager.addObstacle(bench.getObject());
+    collisionManager.addObstacle(bench.getObject());  //Bench blocks player
 
     raycastManager.add(bench.getObject(), () => {
-      infoPanel.show('Park Bench<br>A place to rest and enjoy the park.');
+      infoPanel.show('Park Bench<br>A place to rest and enjoy the park.');  //Clicking shows info panel
     });
   });
 
     // --------------------
-  // 🚗 Sketchfab Car (GLTF) – Between Upper-Left and Lower-Left Benches
+  //  Sketchfab Car (GLTF) – Between Upper-Left and Lower-Left Benches
   // --------------------
-  modelLoader.load('/assets/models/car/scene.gltf').then(car => {
-    car.traverse(child => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+  modelLoader.load('/assets/models/car/scene.gltf').then(car => {  //modelLoader.load() returns a Promis, When the GLTF finishes loading: car is a THREE.Group, It contains many meshes, materials, and children
+    car.traverse(child => { //we traverse it, Walks through every child object, Including meshes inside groups inside groups
+      if (child.isMesh) {  //check if child is a mesh
+        child.castShadow = true;  //can cast shadows
+        child.receiveShadow = true;   //can receive shadows
 
-        // Ensure MeshStandardMaterial for three.js
+        // Sketchfab models often use non-PBR materials, Or materials that don’t react correctly to Three.js light
+        //that's why we enforce MeshStandardMaterial → correct lighting + textures
         if (!child.material || !child.material.isMeshStandardMaterial) {
           child.material = new THREE.MeshStandardMaterial({
-            map: child.material?.map || null,
+            map: child.material?.map || null,  //If texture exists → reuse it, If not → fallback to safe defaults
             normalMap: child.material?.normalMap || null,
             roughnessMap: child.material?.roughnessMap || null,
             metalnessMap: child.material?.metalnessMap || null,
@@ -242,26 +213,22 @@ modelLoader.load('/assets/models/benches/bench.glb').then(model => {
 
     // Place between upper-left (-8,0,-8) and lower-left (-8,0,8) benches
     car.position.set(-8, 0, 0);
-
-    // Add to scene
     scene.add(car);
 
-    // Optional raycast info
+    // When we click it shows information
     raycastManager.add(car, () => {
       infoPanel.show('Old Rusty Car<br>A classic Sketchfab car.');
     });
 
   }).catch(error => console.error('Error loading old car GLTF:', error));
 
-
-
 });
 
 // --------------------
-// 🌭 Hotdog Machine – Between Upper-Left and Upper-Right Benches
+// Hotdog Machine – Between Upper-Left and Upper-Right Benches
 // --------------------
-modelLoader.load('/assets/models/hotdog_machine/scene.gltf').then(machine => {
-  machine.traverse(child => {
+modelLoader.load('/assets/models/hotdog_machine/scene.gltf').then(machine => {  //machine = THREE.Group
+  machine.traverse(child => {  //Traverse + shadows + materials, same logic as car
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
@@ -289,68 +256,57 @@ modelLoader.load('/assets/models/hotdog_machine/scene.gltf').then(machine => {
 
   scene.add(machine);
 
-  console.log('🌭 Hotdog machine loaded!');
+  console.log('Hotdog machine loaded!');
 }).catch(error => console.error('Error loading hotdog machine:', error));
 
+//Day/Night manager needs access to all lamps
+const lamps = [];  //each lamp has mesh, light, is controlled by day/night
 
-const lamps = [];
-
-modelLoader.load('/assets/models/lamps/lamp.glb').then(model => {
-  const lampPositions = [
+modelLoader.load('/assets/models/lamps/lamp.glb').then(model => { //load once
+  const lampPositions = [  //four corners in the park
     new THREE.Vector3(-10, 0, -10),
     new THREE.Vector3(10, 0, -10),
     new THREE.Vector3(-10, 0, 10),
     new THREE.Vector3(10, 0, 10),
   ];
 
-  lampPositions.forEach(pos => {
-    const lamp = new Lamp(scene, model, pos);
-    lamps.push(lamp);
+  lampPositions.forEach(pos => {  //create lamps, loop through positions
+    const lamp = new Lamp(scene, model, pos);  //create lamp instance, inside lamp there is clone model, point light, position
+    lamps.push(lamp); //store it
 
-    raycastManager.add(lamp.getObject(), () => lamp.toggle());
+    raycastManager.add(lamp.getObject(), () => lamp.toggle());  //click interaction
   });
 });
 
-const dayNightManager = new DayNightManager(scene, lamps);
-// Hook stars into day/night system
-// const originalToggle = dayNightManager.toggle.bind(dayNightManager);
-
-// dayNightManager.toggle = () => {
-//   originalToggle();
-//   stars.setVisible(dayNightManager.isNight);
-// };
+const dayNightManager = new DayNightManager(scene, lamps);  //controls sky color, ambient light, directional light, lamps on at night
 
 // Hook stars + wind into day/night system
-const originalToggle = dayNightManager.toggle.bind(dayNightManager);
+const originalToggle = dayNightManager.toggle.bind(dayNightManager); //override toggle
 
-dayNightManager.toggle = () => {
-  originalToggle();
-
+dayNightManager.toggle = () => {  //extend behavior without modifying the class
+  originalToggle(); //call original logic
   // ⭐ Stars
-  stars.setVisible(dayNightManager.isNight);
-
+  stars.setVisible(dayNightManager.isNight);  //night -ON, day-OFF
   // 🌬️ Wind
-  windSystem.setEnabled(!dayNightManager.isNight);
+  windSystem.setEnabled(!dayNightManager.isNight); //day -ON, night -OFF
 };
-
-
 
 // --------------------
 // Fountain (FBX)
 // --------------------
-const fbxLoader = new FBXLoader();
+const fbxLoader = new FBXLoader();  //Creates an FBXLoader instance from Three.js.
 
 fbxLoader.load(
   '/assets/models/fountain/fountain.fbx',
   (model) => {
-    const fountain = new Fountain(
+    const fountain = new Fountain(  //creates fountain class instance
       scene,
       model,
       { x: 0, y: 0, z: 0 } // CENTER
     );
 
     raycastManager.add(fountain.getObject(), () => {
-      infoPanel.show('Fountain<br>Central attraction of the park.');
+      infoPanel.show('Fountain<br>Central attraction of the park.'); //shows information when we click
     });
   },
   undefined,
@@ -359,18 +315,22 @@ fbxLoader.load(
   }
 );
 
-let waterSystems = [];
+let waterSystems = []; //Array to store all water tiers of the fountain
+//Each tier has different height, radius, and number of particles, creating realistic water flow.
 
 waterSystems.push(
   // Top tier
+  //adds water particles to the scene, {x,y,z} → position relative to fountain.
   new FountainWater(scene, { x: 0, y: 1.6, z: 0 }, {
-    count: 40,
-    minHeight: 1.6,
+    ////{count, minHeight, maxHeight, radius} → controls particle fountain effect:
+    count: 40,  //count: number of water drops
+    minHeight: 1.6,  //minHeight / maxHeight: vertical range
     maxHeight: 2.2,
-    radius: 0.15
+    radius: 0.15 //radius: horizontal spread
   }),
 
   // Middle tier
+  //More drops, lower, wider spread → realistic layered fountain
   new FountainWater(scene, { x: 0, y: 1.0, z: 0 }, {
     count: 50,
     minHeight: 1.0,
@@ -378,7 +338,7 @@ waterSystems.push(
     radius: 0.35
   }),
 
-  // Bottom tier (gentle bubbling)
+  // Bottom tier - Gentle bubbling effect at base
   new FountainWater(scene, { x: 0, y: 0.4, z: 0 }, {
     count: 60,
     minHeight: 0.4,
@@ -388,27 +348,24 @@ waterSystems.push(
 );
 
 // --------------------
-// 🧺 Picnic Blanket – Simple GLTF – Between Car and Lower-Left Bench
+// Picnic Blanket – Simple GLTF – Between Car and Lower-Left Bench
 // --------------------
 modelLoader.load('/assets/models/picnic_simple/scene.gltf').then(picnic => {
 
-  // Make sure it casts/receives shadows
+  // Ensures blanket interacts with lighting correctly:
   picnic.traverse(child => {
     if (child.isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
+      child.castShadow = true; //Casts shadows on ground
+      child.receiveShadow = true;  //Can receive shadows from benches, trees, etc.
     }
   });
 
   // Scale & rotate
-  
   picnic.scale.set(0.05,0.05,0.05);
   picnic.rotation.y = 0;
 
   // Position – between Car (-8,0,0) and Lower-left Bench (-8,0,8)
-  picnic.position.set(-8, 0, 4); // halfway between 0 and 8 on Z
-
-  // Add to scene
+  picnic.position.set(-8, 0, 4); // X = -8 → aligned with car / bench row, Z = 4 → halfway between car (0) and lower-left bench (8), Y = 0 → sits on ground.
   scene.add(picnic);
 
   console.log('🧺 Simple picnic blanket loaded!');
@@ -416,15 +373,15 @@ modelLoader.load('/assets/models/picnic_simple/scene.gltf').then(picnic => {
 
 
 // --------------------
-// 🌿 Agapanthus (FBX) – Around Fountain
+//  Agapanthus (FBX) – Around Fountain
 // --------------------
 const fbxPlantLoader = new FBXLoader();
 
 fbxPlantLoader.load(
   '/assets/models/plants/agapanthus/Agapanthus_01.fbx',
   (model) => {
-    model.traverse(child => {
-      if (child.isMesh) {
+    model.traverse(child => {  //traverse walks through all objects inside model
+      if (child.isMesh) {  //isMesh checks if the object is a renderable 3D mesh.
         child.castShadow = true;
         child.receiveShadow = true;
       }
@@ -432,20 +389,21 @@ fbxPlantLoader.load(
 
     model.scale.set(0.01, 0.01, 0.01); // FBX usually huge
 
-    const count = 16;
-    const radius = 2.6;
+    //Arrange plants in a circle
+    const count = 16;  //number of plants around the fountain.
+    const radius = 2.6;  //how far from the center of the fountain they should be.
 
     for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
+      const angle = (i / count) * Math.PI * 2;  //evenly space plants in a circle around the fountain, converts the iteration index to radians around a full circle
 
-      const plant = model.clone();
+      const plant = model.clone();  //Clone and position each plant
       plant.position.set(
-        Math.cos(angle) * radius,
-        0,
-        Math.sin(angle) * radius
+        Math.cos(angle) * radius,  //X coordinate on the circle.
+        0,   //Y = 0 → sits on ground.
+        Math.sin(angle) * radius  //Z coordinate on the circle.
       );
 
-      plant.rotation.y = angle + Math.PI / 2;
+      plant.rotation.y = angle + Math.PI / 2;  //Rotate around Y axis so plants face outward from the circle
       scene.add(plant);
     }
   },
@@ -456,11 +414,11 @@ fbxPlantLoader.load(
 );
 
 // --------------------
-// 🌷 Tulips (OBJ) – Near Benches
+// Tulips (OBJ) – Near Benches
 // --------------------
 const objLoader = new OBJLoader();
 
-objLoader.load('/assets/models/plants/tulips/tulips.obj', (model) => {
+objLoader.load('/assets/models/plants/tulips/tulips.obj', (model) => {  //model is loaded as a Three.js Group / Mesh.
   model.traverse(child => {
     if (child.isMesh) {
       child.castShadow = true;
@@ -470,21 +428,21 @@ objLoader.load('/assets/models/plants/tulips/tulips.obj', (model) => {
 
   model.scale.set(0.02, 0.02, 0.02);
 
-  const benchPositions = [
+  const benchPositions = [  //Define positions near benches
     new THREE.Vector3(-8, 0, -8),
     new THREE.Vector3(8, 0, -8),
     new THREE.Vector3(-8, 0, 8),
     new THREE.Vector3(8, 0, 8),
   ];
 
-  benchPositions.forEach(pos => {
+  benchPositions.forEach(pos => {  //Plant tulips in two rows (left/right side of benches)
     // Left side
     for (let i = 0; i < 3; i++) {
       const tulip = model.clone();
       tulip.position.set(
-        pos.x - 1 + Math.random() * 0.3,
+        pos.x - 1 + Math.random() * 0.3,  //X = pos.x - 1 → left of bench, slight random offset (+0~0.3) for natural look
         0,
-        pos.z + i * 0.4 - 0.4
+        pos.z + i * 0.4 - 0.4  //spreads 3 tulips along Z-axis in front of bench
       );
       tulip.rotation.y = Math.random() * Math.PI;
       scene.add(tulip);
@@ -494,7 +452,7 @@ objLoader.load('/assets/models/plants/tulips/tulips.obj', (model) => {
     for (let i = 0; i < 3; i++) {
       const tulip = model.clone();
       tulip.position.set(
-        pos.x + 1 + Math.random() * 0.3,
+        pos.x + 1 + Math.random() * 0.3,  //X = pos.x + 1 → right of bench.
         0,
         pos.z + i * 0.4 - 0.4
       );
@@ -505,9 +463,9 @@ objLoader.load('/assets/models/plants/tulips/tulips.obj', (model) => {
 });
 
 // --------------------
-// 🐶 Dog – back-and-forth animation
+// Dog – back-and-forth animation
 // --------------------
-let dog;
+let dog;  //will hold the 3D model object once loaded
 let dogSpeed = 2; // units per second
 let dogDirection = 1; // 1 = forward, -1 = backward
 const dogStartX = 5;
@@ -519,7 +477,7 @@ dogLoader.setPath('/assets/models/dog/'); // base folder for gltf
 dogLoader.load(
   'scene.gltf',
   (gltf) => {
-    dog = gltf.scene;
+    dog = gltf.scene;   //the actual 3D object loaded from the GLTF file
     dog.scale.set(0.01, 0.01, 0.01); // adjust as needed
     dog.position.set(dogStartX, 0, 2); // starting position in the park
     dog.rotation.y = 0;
@@ -540,7 +498,7 @@ dogLoader.load(
 );
 
 // --------------------
-// 🛝 Slide – Between Right-Upper Bench and Dog
+// Slide – Between Right-Upper Bench and Dog
 // --------------------
 fbxLoader.load(
   '/assets/models/slide/Slide.fbx',
@@ -549,14 +507,14 @@ fbxLoader.load(
     // Traverse all child meshes to enable shadows
     slide.traverse(child => {
       if (child.isMesh) {
-        child.castShadow = true;
+        child.castShadow = true;  //Enables the slide to cast and receive shadows, same as with the dog
         child.receiveShadow = true;
       }
     });
 
     // Scale & rotate
     slide.scale.set(0.01, 0.01, 0.01); // FBX models are usually huge
-    slide.rotation.y = Math.PI / 4;     // adjust rotation as needed
+    slide.rotation.y = Math.PI / 4;     // otates the slide 45° clockwise around Y-axis, so it aligns properly with other park objects.
 
     // Position somewhere between right-upper bench (8,0,-8) and dog
     // Example: place at (5,0,-4)
@@ -566,30 +524,30 @@ fbxLoader.load(
     scene.add(slide);
     collisionManager.addObstacle(slide);
 
-    console.log('🛝 Slide loaded!');
+    console.log('Slide loaded!');
   },
   undefined,
   (error) => console.error('Error loading slide:', error)
 );
 
 // --------------------
-// 🛝 Swing – Near the slide
+// Swing – Near the slide
 // --------------------
 fbxLoader.load(
   '/assets/models/swing/Swing.fbx',
   (swing) => {
 
     // Enable shadows on all meshes
-    swing.traverse(child => {
+    swing.traverse(child => { //Loops through all child meshes of the swing
       if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = true;  //the swing will cast shadows on the ground.
+        child.receiveShadow = true;  //it can receive shadows from other objects
       }
     });
 
     // Scale & rotation
     swing.scale.set(0.002, 0.002, 0.002); // FBX is usually very large
-    swing.rotation.y = -Math.PI / 6;    // adjust rotation to face the right way
+    swing.rotation.y = -Math.PI / 6;    // rotates the swing about 30° counterclockwise so it faces correctly relative to the slide.
 
     // Position: somewhere near the slide
     // Example: slide is at (5,0,-4), swing at (6,0,-5)
@@ -606,13 +564,13 @@ fbxLoader.load(
 );
 
 // --------------------
-// 🏰 Playground – Between the dog and lower-right bench
+// Playground – Between the dog and lower-right bench
 // --------------------
 fbxLoader.load(
   '/assets/models/playground/3d-model.fbx',
   (playground) => {
 
-    // Enable shadows for all meshes
+    // Enable shadows for all child meshes
     playground.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true;
@@ -622,10 +580,10 @@ fbxLoader.load(
 
     // Scale & rotation
     playground.scale.set(0.01, 0.01, 0.01);  // FBX is usually very large
-    playground.rotation.y = 0;                // Adjust rotation if needed
+    playground.rotation.y = 0;                //keeps the model facing forward
 
     // Position: example values (between dog and lower-right bench)
-    // If your dog is at (-4,0,0) and lower-right bench at (8,0,8), adjust as needed
+    // If dog is at (-4,0,0) and lower-right bench at (8,0,8), adjust as needed
     playground.position.set(5, 0, 4);
 
     // Add to scene
@@ -639,32 +597,32 @@ fbxLoader.load(
 );
 
 // --------------------
-// Resize
+// Resize - Listens for browser window resize events
 // --------------------
 window.addEventListener('resize', () => {
-  cameraManager.resize();
-  renderer.resize();
+  cameraManager.resize();  //Listens for browser window resize events
+  renderer.resize();  //updates the renderer size to match the new window dimensions
 });
 
 // --------------------
 // Animate Loop
 // --------------------
-
-
 function animate() {
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animate); //repeatedly calls animate() at ~60fps
+  //delta = time (in seconds) since the last frame
+  const delta = clock.getDelta(); //Used for frame-independent movement, so objects move smoothly regardless of FPS
 
-  const delta = clock.getDelta();
-
-  windSystem.update(delta);
-  waterSystems.forEach(w => w.update());
+  windSystem.update(delta);  //Updates the wind animations
+  waterSystems.forEach(w => w.update());  //Updates fountain water particles for each tier
 
   if (dog) {
+    //Moves the dog along X-axis using dogSpeed and dogDirection
     dog.position.x += dogSpeed * dogDirection * delta;
 
+    //Checks if the dog reached the bounds (dogStartX or dogEndX) → flips direction
     if (dog.position.x >= dogEndX) {
       dogDirection = -1;
-      dog.rotation.y = Math.PI;
+      dog.rotation.y = Math.PI;  //rotates dog 180° when changing direction
     }
     if (dog.position.x <= dogStartX) {
       dogDirection = 1;
@@ -672,33 +630,30 @@ function animate() {
     }
   }
 
-  // ✅ Update FPS only if active
-  //fpController.update(delta);
-
-  collisionManager.update();
-  fpController.update(delta, collisionManager);
-
+  collisionManager.update();  //Updates collision detection for the FPS player
+  fpController.update(delta, collisionManager);  //Updates the first-person controller based on user input and collisions
 
   if (!isFirstPerson) {
-    controls.update();
+    controls.update();  //Updates OrbitControls only if the player is not in FPS mode
   }
 
   renderer.render(scene);
 }
 
-
-
 animate();
 
+//Listens for button click to switch between day and night
 document.getElementById('toggleDay').addEventListener('click', () => {
-  dayNightManager.toggle();
+  dayNightManager.toggle();  //Calls the DayNightManager to handle lights, stars, and wind.
 
 });
 
+//Switches camera control between first-person view and orbit view.
 document.getElementById('toggleView').addEventListener('click', () => {
   isFirstPerson = !isFirstPerson;
 
   if (isFirstPerson) {
+    //Updates isFirstPerson state, Enables/disables the appropriate controller: OrbitControls → mouse orbit around the scene, FPSController → move like a game character.
     controls.enabled = false;     // disable orbit
     fpController.enable();        // enable FPS
   } else {

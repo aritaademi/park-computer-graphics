@@ -1,4 +1,3 @@
-// src/core/SceneManager.js
 import * as THREE from 'three';
 
 export default class SceneManager {

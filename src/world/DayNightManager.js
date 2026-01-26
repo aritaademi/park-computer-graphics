@@ -1,33 +1,36 @@
 import * as THREE from 'three';
 
 export default class DayNightManager {
+  //scene → world
+  //lights → lamp objects
   constructor(scene, lights = []) {
-    this.scene = scene;
-    this.lamps = lights;
-    this.isNight = false;
+    this.scene = scene;  //store scene
+    this.lamps = lights;  //store lights
+    this.isNight = false;  //store state
 
-    // DAY lighting
+    // DAY lighting settings
     this.daySettings = {
-      ambient: 0.6,
-      directional: 1.0,
-      background: 0xbfd1e5
+      ambient: 0.6,  //bright ambient
+      directional: 1.0, //strong sunlight
+      background: 0xbfd1e5  //light blue sky
     };
 
     // NIGHT lighting (soft, not dark)
-    this.nightSettings = {
-      ambient: 0.25,
-      directional: 0.35,
-      background: 0x0b1c2d
+    this.nightSettings = { 
+      ambient: 0.25,  //dim but visible
+      directional: 0.35,  //soft moonlight
+      background: 0x0b1c2d  //dark blue sky
     };
 
+    //get lights from scene, Requires lights to be named when created
     this.ambientLight = scene.getObjectByName('ambientLight');
     this.directionalLight = scene.getObjectByName('sunLight');
   }
 
   toggle() {
-    this.isNight = !this.isNight;
+    this.isNight = !this.isNight;  //flip state
 
-    const settings = this.isNight
+    const settings = this.isNight  //choose settings
       ? this.nightSettings
       : this.daySettings;
 

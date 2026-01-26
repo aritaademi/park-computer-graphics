@@ -1,4 +1,3 @@
-// src/world/Ground.js
 import * as THREE from 'three';
 
 export default class Ground {

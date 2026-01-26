@@ -31,27 +31,27 @@
 
 export default class WindSystem {
   constructor() {
-    this.trees = [];
-    this.time = 0;
-    this.enabled = true; // ✅ NEW
+    this.trees = [];  //All trees affected by wind
+    this.time = 0;  //Drives sine wave
+    this.enabled = true; // Allows turning wind on/off
   }
 
-  add(tree) {
-    this.trees.push(tree);
+  add(tree) { //adds a tree
+    this.trees.push(tree);  //Registers a tree for wind animation
   }
 
   setEnabled(value) {
-    this.enabled = value;
+    this.enabled = value;  //enable/disable wind
   }
 
-  update(delta) {
-    if (!this.enabled) return; // ✅ STOP WIND
+  update(delta) {  //called every frame, delta = time since last frame
+    if (!this.enabled) return; //stop wind if disabled
 
     this.time += delta;
 
-    this.trees.forEach(tree => {
+    this.trees.forEach(tree => {  //animate sway
       tree.rotation.z =
-        Math.sin(this.time * 0.5) * 0.01;
+        Math.sin(this.time * 0.5) * 0.01;  //Math.sin() → smooth back-and-forth, Small value → subtle movement
     });
   }
 }

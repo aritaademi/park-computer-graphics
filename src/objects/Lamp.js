@@ -1,86 +1,30 @@
-
-// import * as THREE from 'three';
-
-// export default class Lamp {
-//   constructor(scene, model, position) {
-//     this.scene = scene;
-//     this.isOn = true;
-
-//     // Parent group
-//     this.group = new THREE.Group();
-//     this.group.position.copy(position);
-
-//     // Add GLB model
-//     this.model = model;
-//     this.model.scale.set(1, 1, 1); // adjust based on your model size
-//     this.model.position.y += 0.0; // lift above ground if needed
-//     this.group.add(this.model);
-
-//     // Point light
-//     this.light = new THREE.PointLight(0xffeeaa, 1, 10);
-//     this.light.position.set(0, 3, 0);
-//     this.light.castShadow = true;
-//     this.group.add(this.light);
-
-//     // Shadow & emissive
-//     this.model.traverse(child => {
-//       if (child.isMesh) {
-//         child.castShadow = true;
-//         child.receiveShadow = true;
-//         if (child.material) {
-//           child.material.emissive = new THREE.Color(0xffcc66);
-//           child.material.emissiveIntensity = 1;
-//         }
-//       }
-//     });
-
-//     scene.add(this.group);
-//   }
-
-//   toggle() {
-//     this.isOn = !this.isOn;
-//     this.light.intensity = this.isOn ? 1 : 0;
-
-//     this.model.traverse(child => {
-//       if (child.isMesh && child.material) {
-//         child.material.emissive.set(this.isOn ? 0xffcc66 : 0x000000);
-//       }
-//     });
-//   }
-
-//   getObject() {
-//     return this.group;
-//   }
-// }
-
-
-// src/objects/Lamp.js
 import * as THREE from 'three';
 
 export default class Lamp {
   constructor(scene, model, position) {
-    this.scene = scene;
-    this.isOn = true;
+    this.scene = scene; //store scene
+    this.isOn = true;  //isOn tracks lamp state
 
+    //why group? Combines model + light, Move/rotate as ONE object
     this.group = new THREE.Group();
     this.group.position.copy(position);
 
-    // clone the model for each instance
-    this.model = model.clone();
-    this.model.scale.set(0.5, 0.5, 0.5);
-    this.group.add(this.model);
+    this.model = model.clone(); //clone model, Each lamp is independent
+    this.model.scale.set(0.5, 0.5, 0.5);  //fix model size
+    this.group.add(this.model);  //add model to group
 
+    //create light, color: warm yellow, intensity: 1, distance: 12 units
     this.light = new THREE.PointLight(0xffeeaa, 1, 12);
-    this.light.position.set(0, 3, 0);
-    this.light.castShadow = true;
-    this.group.add(this.light);
+    this.light.position.set(0, 3, 0);  //positioned above light head
+    this.light.castShadow = true;  //Lamp casts shadows on ground
+    this.group.add(this.light);   //add light to group
 
-    this.model.traverse(child => {
-      if (child.isMesh) {
+    this.model.traverse(child => {  //traverse - Walks through all lamp meshes
+      if (child.isMesh) {  //Only meshes need shadows/materials
         child.castShadow = true;
         child.receiveShadow = true;
         if (child.material) {
-          child.material.emissive = new THREE.Color(0xffcc66);
+          child.material.emissive = new THREE.Color(0xffcc66);  //emissive glow
           child.material.emissiveIntensity = 1;
         }
       }
@@ -89,20 +33,20 @@ export default class Lamp {
     scene.add(this.group);
   }
 
-  toggle() {
-    this.isOn = !this.isOn;
-    this.light.intensity = this.isOn ? 1 : 0;
+  toggle() {  //Switch ON / OFF
+    this.isOn = !this.isOn;  //Flip state
+    this.light.intensity = this.isOn ? 1 : 0;  //ON → emits light, OFF → no light
 
     this.model.traverse(child => {
       if (child.isMesh && child.material) {
-        child.material.emissive.set(this.isOn ? 0xffcc66 : 0x000000);
+        child.material.emissive.set(this.isOn ? 0xffcc66 : 0x000000);  //ON → glowing lamp, OFF → dark lamp
       }
     });
   }
 
-  setLight(isOn) {
+  setLight(isOn) {  //set light directly
     if (this.light) {
-      this.light.intensity = isOn ? 1.5 : 0;
+      this.light.intensity = isOn ? 1.5 : 0;  //Stronger intensity when ON
     }
   }
 

@@ -3,11 +3,11 @@ import * as THREE from 'three';
 
 export default class Tree {
   constructor(scene, position) {
-    const tree = new THREE.Group();
+    const tree = new THREE.Group(); //Trunk + leaves grouped together
 
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader();  //Loads image textures.
 
-    // 🌳 Bark Textures
+    // Bark Textures
     const barkColor = textureLoader.load('/assets/textures/trees/bark/bark_diffuse.jpg');
     const barkNormal = textureLoader.load('/assets/textures/trees/bark/bark_normal.jpg');
     const barkRoughness = textureLoader.load('/assets/textures/trees/bark/bark_roughness.jpg');
@@ -21,7 +21,7 @@ export default class Tree {
       roughness: 1
     });
 
-    // 🌲 Leaves Textures
+    // Leaves Textures
     const leavesColor = textureLoader.load('/assets/textures/trees/leaves/leaves_diffuse.jpg');
     const leavesNormal = textureLoader.load('/assets/textures/trees/leaves/leaves_normal.jpg');
     const leavesRoughness = textureLoader.load('/assets/textures/trees/leaves/leaves_roughness.jpg');
@@ -40,9 +40,8 @@ export default class Tree {
       new THREE.CylinderGeometry(0.3, 0.5, 3, 16),
       trunkMaterial
     );
-    trunk.position.y = 1.5;
+    trunk.position.y = 1.5;  //Moves trunk up so bottom touches ground
     trunk.castShadow = true;
-    // trunk.receiveShadow = true;
     trunk.receiveShadow = false;
 
     // Leaves
@@ -51,8 +50,7 @@ export default class Tree {
       leavesMaterial
     );
     leaves.position.y = 3.6;
-    // leaves.castShadow = true;
-    leaves.castShadow = false;
+    leaves.castShadow = false;  //Performance decision (many trees)
     leaves.receiveShadow = false;
 
     // IMPORTANT for AO maps

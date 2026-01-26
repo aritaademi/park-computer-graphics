@@ -1,7 +1,6 @@
-// src/world/Environment.js
 import * as THREE from 'three';
 
-export default class Environment {
+export default class Environment {  //Creates the ground/terrain of the park
   constructor(scene) {
     const groundGeometry = new THREE.PlaneGeometry(200, 200);
     const groundMaterial = new THREE.MeshStandardMaterial({
