@@ -5,14 +5,15 @@
 Follow these steps to clone and run the project on your computer:
 
 1. Clone the repository
+   
 git clone https://github.com/aritaademi/park-computer-graphics.git
 
  cd park-computer-graphics
 
-3. Make sure you install the dependencies
+2. Make sure you install the dependencies
 npm install
 
-4. Run the project locally
+3. Run the project locally
 npm start
 
 📌 Project Overview
