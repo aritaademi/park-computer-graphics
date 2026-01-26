@@ -1,4 +1,4 @@
-🎉 **Live Demo:** [View the project in your browser](https://parkproject-omega.vercel.app/)
+🎉 Live Demo [View the project in your browser](https://parkproject-omega.vercel.app/)
 
 🚀 Getting Started (Run Locally)
 
