@@ -72,21 +72,24 @@ stars.setVisible(false); //stars exist but are hidden during day
 // --------------------
 // Trees – Large Rectangle Border
 // --------------------
-const treeDistance = 18;
-const treePositions = [];
+const treeDistance = 18;   //is the half-extent of the rectangle (distance from center to each side).
+const treePositions = [];  //will collect {x,y,z} positions for each border tree.
 
 // Top & Bottom rows - calculate positions in a rectangle to form a park boundary
+//x runs from -18 to 18 with step 6: values [-18, -12, -6, 0, 6, 12, 18] → 7 values
 for (let x = -treeDistance; x <= treeDistance; x += 6) {
-  treePositions.push({ x, y: 0, z: -treeDistance });
-  treePositions.push({ x, y: 0, z: treeDistance });
+  treePositions.push({ x, y: 0, z: -treeDistance });  //For each x you push two positions: one at z = -18 (top edge)
+  treePositions.push({ x, y: 0, z: treeDistance });  //one at z = +18 (bottom edge)
 }
 // Left & Right rows - calculate positions in a rectangle to form a park boundary
+//z runs from -12 to 12 with step 6: values [-12, -6, 0, 6, 12] → 5 values.
 for (let z = -treeDistance + 6; z <= treeDistance - 6; z += 6) {
-  treePositions.push({ x: -treeDistance, y: 0, z });
-  treePositions.push({ x: treeDistance, y: 0, z });
+  treePositions.push({ x: -treeDistance, y: 0, z });  //For each z push two positions: one at x = -18 (left edge)
+  treePositions.push({ x: treeDistance, y: 0, z });  //one at x = +18 (right edge)
 }
 
-treePositions.forEach(pos => new Tree(scene, pos));  //Procedural generation = no manual placement
+treePositions.forEach(pos => new Tree(scene, pos));  //Convert positions to Tree instances, For each {x,y,z} in treePositions you construct a Tree instance
+//That Tree class creates a THREE.Group containing trunk + leaves, sets materials/textures, positions it, and adds it to the scene.
 
 const gltfLoader = new GLTFLoader();
 const windSystem = new WindSystem();
@@ -99,9 +102,8 @@ gltfLoader.load(   //load decorative trees
   (gltf) => {
 
     const treeModel = gltf.scene;
-
     treeModel.traverse(child => {
-      if (child.isMesh) {
+      if (child.isMesh) { //enable shadows on its meshes
         child.castShadow = true;
         child.receiveShadow = true;
       }
@@ -117,21 +119,23 @@ gltfLoader.load(   //load decorative trees
 );
 function addDecorativeTrees(scene, treeTemplate) {
   const layers = 3;          // how many rows behind
-  const spacing = 6;         // distance between trees
-  const layerOffset = 5;     // distance between rows
+  const spacing = 6;         // distance between trees, horizontal/vertical spacing between adjacent trees
+  const layerOffset = 5;     // distance between rows, how far each decorative ring sits behind the base border
   const baseDistance = 18;   // your existing treeDistance
 
   for (let layer = 1; layer <= layers; layer++) {
-
+    //For each layer compute offset = 18 + layer*5: layer 1 → offset = 23, layer 2 → offset = 28, layer 3 → offset = 33
     const offset = baseDistance + layer * layerOffset;
 
     // TOP & BOTTOM
+    //creates rows along the top and bottom at z = ±offset, with x spanning from -offset to +offset in steps of spacing
     for (let x = -offset; x <= offset; x += spacing) {
       spawnDecorativeTree(scene, treeTemplate, x, 0, -offset);
       spawnDecorativeTree(scene, treeTemplate, x, 0, offset);
     }
 
     // LEFT & RIGHT
+    //    //This fills the sides between the corners; it intentionally avoids duplicating the corner positions by starting at -offset + spacing and ending at offset - spacing
     for (let z = -offset + spacing; z <= offset - spacing; z += spacing) {
       spawnDecorativeTree(scene, treeTemplate, -offset, 0, z);
       spawnDecorativeTree(scene, treeTemplate, offset, 0, z);
@@ -142,7 +146,7 @@ function addDecorativeTrees(scene, treeTemplate) {
 function spawnDecorativeTree(scene, template, x, y, z) {
   const tree = template.clone(true);  //clone many times
 
-  const scale = 2 + Math.random() * 1.5;
+  const scale = 2 + Math.random() * 1.5; //scale trees for natural look in range[2,3.5]
   tree.scale.set(scale, scale, scale);
 
   tree.position.set(
@@ -151,7 +155,7 @@ function spawnDecorativeTree(scene, template, x, y, z) {
     z + Math.random() * 1.5
   );
 
-  tree.rotation.y = Math.random() * Math.PI * 2;
+  tree.rotation.y = Math.random() * Math.PI * 2; //random rotation so they do not look identical
   scene.add(tree);
 
   // Register for wind animation
@@ -514,7 +518,7 @@ fbxLoader.load(
 
     // Scale & rotate
     slide.scale.set(0.01, 0.01, 0.01); // FBX models are usually huge
-    slide.rotation.y = Math.PI / 4;     // otates the slide 45° clockwise around Y-axis, so it aligns properly with other park objects.
+    slide.rotation.y = Math.PI / 4;     // rotates the slide 45° clockwise around Y-axis, so it aligns properly with other park objects.
 
     // Position somewhere between right-upper bench (8,0,-8) and dog
     // Example: place at (5,0,-4)
